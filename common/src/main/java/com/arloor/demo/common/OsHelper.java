@@ -8,6 +8,8 @@ import io.netty.channel.kqueue.KQueueEventLoopGroup;
 import io.netty.channel.kqueue.KQueueServerSocketChannel;
 import io.netty.channel.kqueue.KQueueSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.ServerSocketChannel;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
@@ -22,16 +24,16 @@ public class OsHelper {
     private static final OS os = parseOS();
 
 
-    public static Class serverSocketChannelClazz() {
+    public static Class<? extends ServerSocketChannel> serverSocketChannelClazz() {
         return os.serverSocketChannelClazz;
     }
 
-    public static Class socketChannelClazz() {
+    public static Class<? extends SocketChannel> socketChannelClazz() {
         return os.socketChannelClazz;
     }
 
     public static EventLoopGroup buildEventLoopGroup(int num) {
-        return os.eventLoopBuilder.apply(num);
+        return os.buildEventLoopGroup(num);
     }
 
     public static boolean isUnix() {
@@ -47,21 +49,41 @@ public class OsHelper {
     }
 
     private enum OS {
-        MacOS("mac", KQueueServerSocketChannel.class, KQueueSocketChannel.class, threadNum -> new KQueueEventLoopGroup(threadNum)),
-        Unix("unix", EpollServerSocketChannel.class, EpollSocketChannel.class, threadNum -> new EpollEventLoopGroup(threadNum)),
-        Windows("windows", NioServerSocketChannel.class, NioSocketChannel.class, threadNum -> new NioEventLoopGroup(threadNum)),
-        Other("other", NioServerSocketChannel.class, NioSocketChannel.class, threadNum -> new NioEventLoopGroup(threadNum));
+        MacOS("mac", KQueueServerSocketChannel.class, KQueueSocketChannel.class) {
+            @Override
+            EventLoopGroup buildEventLoopGroup(int num) {
+                return new KQueueEventLoopGroup(num);
+            }
+        },
+        Unix("unix", EpollServerSocketChannel.class, EpollSocketChannel.class) {
+            @Override
+            EventLoopGroup buildEventLoopGroup(int num) {
+                return new EpollEventLoopGroup(num);
+            }
+        },
+        Windows("windows", NioServerSocketChannel.class, NioSocketChannel.class) {
+            @Override
+            EventLoopGroup buildEventLoopGroup(int num) {
+                return new NioEventLoopGroup(num);
+            }
+        },
+        Other("other", NioServerSocketChannel.class, NioSocketChannel.class) {
+            @Override
+            EventLoopGroup buildEventLoopGroup(int num) {
+                return new NioEventLoopGroup(num);
+            }
+        };
 
         String name;
-        Class serverSocketChannelClazz;
-        Class socketChannelClazz;
-        Function<Integer, EventLoopGroup> eventLoopBuilder;
+        Class<? extends ServerSocketChannel> serverSocketChannelClazz;
+        Class<? extends SocketChannel> socketChannelClazz;
 
-        OS(String name, Class serverSocketChannelClass, Class socketChannelClass, Function<Integer, EventLoopGroup> integerEventLoopGroupFunction) {
+        abstract EventLoopGroup buildEventLoopGroup(int num);
+
+        OS(String name, Class<? extends ServerSocketChannel> serverSocketChannelClass, Class<? extends SocketChannel> socketChannelClass) {
             this.name = name;
             this.serverSocketChannelClazz = serverSocketChannelClass;
             this.socketChannelClazz = socketChannelClass;
-            this.eventLoopBuilder = integerEventLoopGroupFunction;
         }
     }
 
@@ -72,11 +94,11 @@ public class OsHelper {
         String pid = name.split("@")[0];
         logger.info("该进程pid= " + pid);
         osName = Optional.ofNullable(osName).orElse("").toLowerCase();
-        if ((osName.indexOf("win") >= 0)) {
+        if ((osName.contains("win"))) {
             return OS.Windows;
-        } else if (osName.indexOf("mac") >= 0) {
+        } else if (osName.contains("mac")) {
             return OS.MacOS;
-        } else if (osName.indexOf("nix") >= 0 || osName.indexOf("nux") >= 0 || osName.indexOf("aix") > 0) {
+        } else if (osName.contains("nix") || osName.contains("nux") || osName.indexOf("aix") > 0) {
             return OS.Unix;
         } else {
             return OS.Other;
