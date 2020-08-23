@@ -3,10 +3,10 @@ option java_multiple_files = true; //分成多个.java文件，而不是内部�
 option java_package = "domain.employee"; // java包名
 option java_outer_classname = "EmployeeModel"; // 外部类名称
 message Employee {
-    int64 id = 1;
-    string name = 2;
-    Skill skills = 3;  //这里声明的为自定义的 Skill 类型
+  int64 id = 1;
+  string name = 2;
+  Skill skills = 3;  //这里声明的为自定义的 Skill 类型
 }
 message Skill {
-    string name = 1;
+  string name = 1;
 }
