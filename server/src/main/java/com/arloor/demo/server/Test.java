@@ -1,4 +1,4 @@
-package com.arloor.drpc.server;
+package com.arloor.demo.server;
 
 import domain.employee.Employee;
 import domain.employee.Skill;

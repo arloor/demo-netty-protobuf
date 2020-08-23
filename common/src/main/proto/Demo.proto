@@ -1,0 +1,33 @@
+syntax = "proto3";//声明使用proto3的语法
+option optimize_for = SPEED;//加快解析
+option java_package = "domain.demo";//指定包名
+option java_outer_classname = "DataInfo";//指定生成java类名
+
+message Model{
+  //申明一个枚举类型
+  enum ModelType{
+    StudentType = 0;
+    WorkerType = 1;
+  }
+
+  //申明一个属性
+  ModelType dataType = 1;
+
+  //Student和Worker属性一次只能传输一个
+  oneof dataBody{
+    Student student = 2;
+    Worker worker = 3;
+  }
+}
+//申明一个类
+message Student {
+  //申明int类型的属性名及次序
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+}
+message Worker {
+  int32 id = 1;
+  string name = 2;
+  int32 age = 3;
+}

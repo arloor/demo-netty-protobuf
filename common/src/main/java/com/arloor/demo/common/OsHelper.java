@@ -1,4 +1,4 @@
-package com.arloor.drpc.common;
+package com.arloor.demo.common;
 
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollEventLoopGroup;
