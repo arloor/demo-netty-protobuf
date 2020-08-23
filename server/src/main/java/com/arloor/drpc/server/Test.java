@@ -2,14 +2,18 @@ package com.arloor.drpc.server;
 
 import domain.employee.Employee;
 import domain.employee.Skill;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class Test {
+    private static Logger logger = LoggerFactory.getLogger(Test.class);
+
     public static void main(String[] args) throws IOException {
-        Employee employee=Employee.newBuilder()
+        Employee employee = Employee.newBuilder()
                 .setId(1)
-                .setName("流感胡歌那")
+                .setName("arloor")
                 .setSkills(Skill.newBuilder().setName("吃饭").build())
                 .build();
 
@@ -18,6 +22,8 @@ public class Test {
         //将字节数组转译成对象,反序列化
         Employee ee = Employee.parseFrom(student2ByteArray);
 
-        System.out.println(ee);
+        logger.info("id: " + ee.getId());
+        logger.info("名字: "+ee.getName());
+        logger.info("技能：" + ee.getSkills().getName());
     }
 }
